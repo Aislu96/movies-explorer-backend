@@ -2,10 +2,18 @@ const Movie = require('../models/movie');
 const NotFoundError = require('../errors/NotFoundError');
 const BadRequest = require('../errors/BadRequest');
 const Forbidden = require('../errors/ForbiddenError');
+const {
+  STATUS_CODE_CREATE, VALIDATION_MESSAGE_ERROR_CREATE_MOVIES, NOT_FOUND_MESSAGE_ERROR_DELETE_MOVIE,
+  CAST_MESSAGE_ERROR_MOVIE, FORBIDDEN_MESSAGE_MOVIE,
+} = require('../utils/constants');
 
 module.exports.getMovies = (req, res, next) => {
-  Movie.find({})
-    .then((movies) => res.send(movies))
+  const { _id } = req.user;
+  Movie.find({ owner: _id })
+    .then((movies) => {
+      const movie = movies.filter((film) => req.user._id === film.owner.toString());
+      return res.send(movie);
+    })
     .catch((err) => next(err));
 };
 
@@ -38,10 +46,10 @@ module.exports.createMovies = (req, res, next) => {
     movieId,
     owner,
   })
-    .then((card) => res.status(201).send(card))
+    .then((card) => res.status(STATUS_CODE_CREATE).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return next(new BadRequest('Переданы некорректные данные при создании фильмов.'));
+        return next(new BadRequest(VALIDATION_MESSAGE_ERROR_CREATE_MOVIES));
       }
       return next(err);
     });
@@ -53,20 +61,20 @@ module.exports.deleteMovie = (req, res, next) => {
     .orFail()
     .then((movie) => {
       if (req.user._id !== movie.owner.toString()) {
-        return next(new Forbidden('Отсутствуют права на удаление карточки'));
+        return next(new Forbidden(FORBIDDEN_MESSAGE_MOVIE));
       }
       return Movie.deleteOne(movie)
         .orFail()
         .then(() => res.send({
-          message: 'Пост удалён',
+          message: 'Фильм удалён',
         }));
     })
     .catch((err) => {
       if (err.name === 'DocumentNotFoundError') {
-        return next(new NotFoundError('Передан несуществующий _id карточки.'));
+        return next(new NotFoundError(NOT_FOUND_MESSAGE_ERROR_DELETE_MOVIE));
       }
       if (err.name === 'CastError') {
-        return next(new BadRequest('Переданы некорректные данные при удалении карточки.'));
+        return next(new BadRequest(CAST_MESSAGE_ERROR_MOVIE));
       }
       return next(err);
     });

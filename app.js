@@ -19,7 +19,6 @@ app.use(express.json()); // для собирания JSON-формата
 app.use(express.urlencoded({ extended: true })); // для приёма веб-страниц внутри POST-запроса
 app.use(helmet());
 
-
 app.use(cors);
 
 mongoose.connect(DB_URL || DB_URL_DEFAULT);
@@ -38,6 +37,4 @@ app.use(errorLogger);
 app.use(errors());
 app.use(errorHandler);
 
-app.listen(PORT || PORT_DEFAULT, () => {
-  console.log(`App listening on port ${PORT}`);
-});
+app.listen(PORT || PORT_DEFAULT);

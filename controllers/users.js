@@ -4,6 +4,10 @@ const NotFoundError = require('../errors/NotFoundError');
 const BadRequest = require('../errors/BadRequest');
 const User = require('../models/user');
 const ConflictError = require('../errors/ConflictError');
+const {
+  STATUS_CODE_CREATE, VALIDATION_MESSAGE_ERROR_PATCH_USER, VALIDATION_MESSAGE_ERROR_CREATE_USER,
+  CONFLICT_MESSAGE_ERROR, NOT_FOUND_MESSAGE_ERROR_USER,
+} = require('../utils/constants');
 require('dotenv').config();
 
 const { JWT_SECRET = 'JWT_SECRET' } = process.env;
@@ -17,15 +21,17 @@ module.exports.patchMe = (req, res, next) => {
   const userId = req.user._id;
   const { email, name } = req.body;
   User.findByIdAndUpdate(userId, { email, name }, { new: true, runValidators: true })
-    .then((user) => {
-      if (!user) {
-        return next(new NotFoundError('Пользователь с таким id не найден.'));
-      }
-      return res.send(user);
-    })
+    .orFail()
+    .then((user) => res.send(user))
     .catch((err) => {
+      if (err.name === 'DocumentNotFoundError') {
+        return next(new NotFoundError(NOT_FOUND_MESSAGE_ERROR_USER));
+      }
       if (err.name === 'ValidationError') {
-        return next(new BadRequest(err.message));
+        return next(new BadRequest(VALIDATION_MESSAGE_ERROR_PATCH_USER));
+      }
+      if (err.code === 11000) {
+        return next(new ConflictError(CONFLICT_MESSAGE_ERROR));
       }
       return next(err);
     });
@@ -41,16 +47,16 @@ module.exports.createUser = (req, res, next) => {
     }))
     .then((data) => {
       const { _id } = data;
-      res.status(201).send({
+      res.status(STATUS_CODE_CREATE).send({
         _id, email, name,
       });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return next(new BadRequest('Переданы некорректные данные при создании пользователя.'));
+        return next(new BadRequest(VALIDATION_MESSAGE_ERROR_CREATE_USER));
       }
       if (err.code === 11000) {
-        return next(new ConflictError('Пользователь уже существует'));
+        return next(new ConflictError(CONFLICT_MESSAGE_ERROR));
       }
       return next(err);
     });
