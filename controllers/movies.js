@@ -4,17 +4,23 @@ const BadRequest = require('../errors/BadRequest');
 const Forbidden = require('../errors/ForbiddenError');
 const {
   STATUS_CODE_CREATE, VALIDATION_MESSAGE_ERROR_CREATE_MOVIES, NOT_FOUND_MESSAGE_ERROR_DELETE_MOVIE,
-  CAST_MESSAGE_ERROR_MOVIE, FORBIDDEN_MESSAGE_MOVIE,
+  CAST_MESSAGE_ERROR_MOVIE, FORBIDDEN_MESSAGE_MOVIE, NOT_FOUND_MESSAGE_ERROR_MOVIES,
 } = require('../utils/constants');
 
 module.exports.getMovies = (req, res, next) => {
-  const { _id } = req.user;
-  Movie.find({ owner: _id })
+  const {_id} = req.user;
+  Movie.find({owner: _id})
+    .orFail()
     .then((movies) => {
       const movie = movies.filter((film) => req.user._id === film.owner.toString());
       return res.send(movie);
     })
-    .catch((err) => next(err));
+    .catch((err) => {
+      if (err.name === 'DocumentNotFoundError') {
+        return next(new NotFoundError(NOT_FOUND_MESSAGE_ERROR_MOVIES));
+      }
+      return next(err)
+    });
 };
 
 module.exports.createMovies = (req, res, next) => {
@@ -56,7 +62,7 @@ module.exports.createMovies = (req, res, next) => {
 };
 
 module.exports.deleteMovie = (req, res, next) => {
-  const { movieId } = req.params;
+  const {movieId} = req.params;
   Movie.findById(movieId)
     .orFail()
     .then((movie) => {

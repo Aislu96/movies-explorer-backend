@@ -21,6 +21,7 @@ const VALIDATION_MESSAGE_ERROR_CREATE_USER = 'Переданы некоррек�
 const CONFLICT_MESSAGE_ERROR = 'Пользователь уже существует.';
 const NOT_FOUND_MESSAGE_ERROR_USER = 'Пользователь с таким id не найден.';
 const NOT_FOUND_MESSAGE_ERROR_DELETE_MOVIE = 'Передан несуществующий id фильма.';
+const NOT_FOUND_MESSAGE_ERROR_MOVIES = 'Нет сохраненных фильмов пользователя.';
 const CAST_MESSAGE_ERROR_MOVIE = 'Передан некорректный id при удалении фильма.';
 const FORBIDDEN_MESSAGE_MOVIE = 'Отсутствуют права на удаление фильма.';
 module.exports = {
@@ -41,6 +42,7 @@ module.exports = {
   CONFLICT_MESSAGE_ERROR,
   NOT_FOUND_MESSAGE_ERROR_USER,
   NOT_FOUND_MESSAGE_ERROR_DELETE_MOVIE,
+  NOT_FOUND_MESSAGE_ERROR_MOVIES,
   CAST_MESSAGE_ERROR_MOVIE,
   FORBIDDEN_MESSAGE_MOVIE,
 };
