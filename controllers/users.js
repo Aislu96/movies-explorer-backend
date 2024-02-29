@@ -12,8 +12,13 @@ require('dotenv').config();
 
 const { JWT_SECRET = 'JWT_SECRET' } = process.env;
 module.exports.getUser = (req, res, next) => {
-  User.find({})
-    .then((user) => res.send(user))
+  User.findById(req.user._id)
+    .then((user) => {
+      if (!user) {
+        return next(new NotFoundError('Пользователь не найден'));
+      }
+      return res.send(user);
+    })
     .catch((err) => next(err));
 };
 
