@@ -1,4 +1,6 @@
 const allowedCors = [
+  'http://movies.kharisova.nomoredomainsmonster.ru/',
+  'https://movies.kharisova.nomoredomainsmonster.ru/',
   'http://localhost:3000',
   'https://localhost:3000',
   'http://localhost:3001',
